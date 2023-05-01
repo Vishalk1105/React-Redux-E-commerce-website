@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Badge from "@mui/material/Badge";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
@@ -8,8 +8,10 @@ import MenuItem from "@mui/material/MenuItem";
 import { NavLink } from "react-router-dom";
 import { Button, Table } from "react-bootstrap";
 import cart from "../assets/cart.svg";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { DLT } from "../redux/actions/action";
 export const Header = () => {
+  const [price, setPrice] = useState(0);
   const getData = useSelector((state) => state.cartreducer.carts);
   // console.log(getData);
 
@@ -21,6 +23,24 @@ export const Header = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const dispatch = useDispatch();
+
+  const dlt = (id) => {
+    dispatch(DLT(id));
+  };
+
+  const total = useCallback(() => {
+    let price = 0;
+    getData.map((ele) => {
+      return (price = ele.price * ele.qnty + price);
+    });
+    setPrice(price);
+  }, [getData]);
+
+  useEffect(() => {
+    total();
+  }, [total]);
   return (
     <div>
       <Navbar bg="dark" variant="dark" style={{ height: "80px" }}>
@@ -73,8 +93,7 @@ export const Header = () => {
                   {getData.map((e) => {
                     return (
                       <tr>
-                        {" "}
-                        <NavLink to={`/cart/${e.id}`}>
+                        <NavLink to={`/cart/${e.id}`} onClick={handleClose}>
                           <td>
                             <img
                               src={e.imgdata}
@@ -93,6 +112,7 @@ export const Header = () => {
                               fontSize: 20,
                               cursor: "pointer",
                             }}
+                            onClick={() => dlt(e.id)}
                           >
                             <i className="fas fa-trash smalltrash"></i>
                           </p>
@@ -104,6 +124,7 @@ export const Header = () => {
                             fontSize: 20,
                             cursor: "pointer",
                           }}
+                          onClick={() => dlt(e.id)}
                         >
                           <i className="fas fa-trash largetrash"></i>
                         </td>
@@ -111,7 +132,7 @@ export const Header = () => {
                     );
                   })}
                 </tbody>
-                <p className="text-center">Total :₹ 300</p>
+                <p className="text-center">Total :₹ {price}</p>
               </Table>
             </div>
           ) : (
